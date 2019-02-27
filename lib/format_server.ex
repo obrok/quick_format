@@ -22,7 +22,7 @@ defmodule QuickFormat.FormatServer do
   defp read_to_end(socket) do
     Stream.repeatedly(fn -> read_line(socket) end)
     |> Stream.take_while(&(&1 != "\0\n"))
-    |> Enum.join("\n")
+    |> Enum.join("")
   end
 
   defp read_line(socket) do
