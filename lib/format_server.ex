@@ -1,18 +1,7 @@
-defmodule FormatServer do
-  require Logger
-
+defmodule QuickFormat.FormatServer do
   def accept(port) do
-    # The options below mean:
-    #
-    # 1. `:binary` - receives data as binaries (instead of lists)
-    # 2. `packet: :line` - receives data line by line
-    # 3. `active: false` - blocks on `:gen_tcp.recv/2` until data is available
-    # 4. `reuseaddr: true` - allows us to reuse the address if the listener crashes
-    #
-    {:ok, socket} =
-      :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
+    {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
 
-    Logger.info("Accepting connections on port #{port}")
     loop_acceptor(socket)
   end
 
@@ -23,13 +12,17 @@ defmodule FormatServer do
   end
 
   defp serve(socket) do
-    Logger.info("Accepted connection")
-
-    socket
-    |> read_line()
+    read_to_end(socket)
     |> Code.format_string!()
     |> write_line(socket)
-    |> :gen_tcp.shutdown(:write)
+
+    :gen_tcp.shutdown(socket, :write)
+  end
+
+  defp read_to_end(socket) do
+    Stream.repeatedly(fn -> read_line(socket) end)
+    |> Stream.take_while(&(&1 != "\0\n"))
+    |> Enum.join("\n")
   end
 
   defp read_line(socket) do

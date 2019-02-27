@@ -7,10 +7,12 @@ fn main() -> std::io::Result<()> {
 
     let stdin = stdin();
     let locked = &mut stdin.lock();
-    let mut input = String::new();
-    locked.read_line(&mut input)?;
 
-    stream.write(&input.into_bytes())?;
+    let mut buffer = Vec::new();
+    locked.read_to_end(&mut buffer)?;
+    stream.write(&buffer)?;
+    stream.write(&"\0\n".to_string().into_bytes())?;
+
     let mut result = String::new();
     stream.read_to_string(&mut result)?;
 
