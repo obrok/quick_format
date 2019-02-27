@@ -1,0 +1,7 @@
+[package]
+name = "quick_format"
+version = "0.1.0"
+authors = ["Paweł Obrok <pawel.obrok@gmail.com>"]
+edition = "2018"
+
+[dependencies]
