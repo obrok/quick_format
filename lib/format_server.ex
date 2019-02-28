@@ -7,7 +7,7 @@ defmodule QuickFormat.FormatServer do
 
   defp loop_acceptor(socket) do
     {:ok, client} = :gen_tcp.accept(socket)
-    serve(client)
+    Task.Supervisor.start_child(__MODULE__.TaskSupervisor, fn -> serve(client) end)
     loop_acceptor(socket)
   end
 
@@ -35,5 +35,20 @@ defmodule QuickFormat.FormatServer do
   defp write_line(line, socket) do
     :gen_tcp.send(socket, line)
     socket
+  end
+
+  def child_spec(_) do
+    children = [
+      {Task.Supervisor, name: __MODULE__.TaskSupervisor},
+      Supervisor.child_spec({Task, fn -> __MODULE__.accept(8090) end}, restart: :permanent)
+    ]
+
+    %{
+      id: __MODULE__.Supervisor,
+      restart: :permanent,
+      shutdown: :infinity,
+      type: :supervisor,
+      start: {Supervisor, :start_link, [children, [strategy: :one_for_one, name: __MODULE__.Supervisor]]}
+    }
   end
 end

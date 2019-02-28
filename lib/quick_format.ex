@@ -1,18 +1,12 @@
 defmodule QuickFormat do
-  @moduledoc """
-  Documentation for QuickFormat.
-  """
+  use Application
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> QuickFormat.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def start(_type, _args) do
+    Supervisor.start_link(
+      [
+        QuickFormat.FormatServer
+      ],
+      strategy: :one_for_one
+    )
   end
 end
