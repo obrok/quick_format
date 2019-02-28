@@ -12,14 +12,16 @@ defmodule QuickFormat.FormatServer do
   end
 
   defp serve(socket) do
-    read_to_end(socket)
-    |> Code.format_string!()
+    {formatter_exs, _} = socket |> read_to_null() |> Code.eval_string()
+
+    read_to_null(socket)
+    |> Code.format_string!(formatter_exs)
     |> write_line(socket)
 
     :gen_tcp.shutdown(socket, :write)
   end
 
-  defp read_to_end(socket) do
+  defp read_to_null(socket) do
     Stream.repeatedly(fn -> read_line(socket) end)
     |> Stream.take_while(&(&1 != "\0\n"))
     |> Enum.join("")
