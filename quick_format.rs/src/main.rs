@@ -3,6 +3,7 @@ use std::io::stdin;
 use std::net::TcpStream;
 use std::path::Path;
 use std::fs;
+use std::time::Duration;
 
 fn main() -> std::io::Result<()> {
     let formatter_exs = find_formatter_exs()?;
@@ -20,6 +21,7 @@ fn main() -> std::io::Result<()> {
     stream.write(&"\0\n".to_string().into_bytes())?;
 
     let mut result = String::new();
+    stream.set_read_timeout(Some(Duration::from_millis(200)))?;
     stream.read_to_string(&mut result)?;
 
     println!("{}", result);
