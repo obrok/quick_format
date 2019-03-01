@@ -12,11 +12,16 @@ defmodule QuickFormat.FormatServer do
   end
 
   defp serve(socket) do
-    {formatter_exs, _} = socket |> read_to_null() |> Code.eval_string()
+    try do
+      {formatter_exs, _} = socket |> read_to_null() |> Code.eval_string()
 
-    read_to_null(socket)
-    |> Code.format_string!(formatter_exs)
-    |> write_line(socket)
+      formatted = read_to_null(socket) |> Code.format_string!(formatter_exs)
+
+      write_line("0\n", socket)
+      write_line(formatted, socket)
+    rescue
+      _ -> write_line("1\n", socket)
+    end
 
     :gen_tcp.shutdown(socket, :write)
   end

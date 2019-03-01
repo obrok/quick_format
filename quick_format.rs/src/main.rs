@@ -1,5 +1,5 @@
 use std::io::prelude::*;
-use std::io::stdin;
+use std::io::{stdin, BufReader, Error, ErrorKind};
 use std::net::TcpStream;
 use std::path::Path;
 use std::fs;
@@ -20,13 +20,21 @@ fn main() -> std::io::Result<()> {
     stream.write(&buffer)?;
     stream.write(&"\0\n".to_string().into_bytes())?;
 
-    let mut result = String::new();
     stream.set_read_timeout(Some(Duration::from_millis(200)))?;
-    stream.read_to_string(&mut result)?;
 
-    println!("{}", result);
+    let mut line = String::new();
+    let mut reader = BufReader::new(stream);
+    reader.read_line(&mut line)?;
 
-    Ok(())
+    if line == "0\n" {
+        let mut result = String::new();
+        reader.read_to_string(&mut result)?;
+        println!("{}", result);
+        Ok(())
+    } else {
+        Err(Error::new(ErrorKind::Other, "Formatting failed"))
+    }
+
 }
 
 fn find_formatter_exs() -> std::io::Result<String> {
