@@ -45,3 +45,8 @@ Your formatter is availabled in `quick_format.rs/target/quick_format`:
 $ echo "[ ]" | quick_format.rs/target/release/quick_format
 []
 ```
+
+## Limitations
+
+Currently, `quick_format` does not support the `import_deps` option in `formatter.exs`.
+
